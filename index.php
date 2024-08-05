@@ -3,6 +3,8 @@
 @ob_start();
 define("DATA","data/");
 define("SAYFA","include/");
+define("SINIF","class/");
+include_once(DATA."baglanti.php");
 ?>
 <!DOCTYPE html>
 <html>
