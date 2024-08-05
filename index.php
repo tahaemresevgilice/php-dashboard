@@ -6,6 +6,8 @@
     <title>Proje</title>
 </head>
 <body>
+    <?php 
     
+    ?>
 </body>
 </html>
