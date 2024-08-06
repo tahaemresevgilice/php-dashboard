@@ -28,6 +28,9 @@
             if($calistir!=false)
             {
               echo '<div class="alert alert-success">Modul Başarıyla Eklendi</div>';
+              ?>
+                <meta http-equiv="refresh" content="2;url=<?=SITE?>"
+              <?php
             }
             else{
               echo '<div class="alert alert-danger">Modul oluşturulurken bir sorun oluştu, sorun şunlar olabilir.<br>

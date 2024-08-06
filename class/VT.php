@@ -126,6 +126,12 @@ class VT {
             return false;
         }
     }
+
+    public function filter($val,$tf=false){
+        if($tf==false){ $val=strip_tags($val);}
+        $val=addcslashes(trim($val),"\0..\37\177..\377");
+        return $val;
+    }
 }
 
 ?>
