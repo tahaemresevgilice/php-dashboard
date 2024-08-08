@@ -17,62 +17,68 @@ class VT {
         }
     }
 
-    public function VeriGetir($tablo,$wherealanlar="",$wherearraydeger="",$orderby="ORDER BY ID ASC",$limit="")
-    {
-        $this->baglanti->query("SET CHARACTER SET utf8");
-        $sql="SELECT * FROM ".$tablo;
-        if(!empty($wherealanlar) && !empty($wherearraydeger))
-        {
-            $sql.=" ".$wherealanlar;
-            if (!empty($orderby)) {$sql .= " " . $orderby;}
-            if (!empty($limit)) {$sql .= " LIMIT " . $limit;}
-            $calistir = $this->baglanti->prepare($sql);
-            $sonuc=$calistir->execute($wherearraydeger);
-            $veri = $calistir->fetchAll(PDO::FETCH_ASSOC);
-        }
-        else{
-            if(!empty($orderby)) { $sql=" ".$orderby;}
-            if(!empty($limit)) { $sql=" LIMIT ".$limit;}
-            $veri=$this->baglanti->query($sql,PDO::FETCH_ASSOC);
-        }
+	public function VeriGetir($tablo, $wherealanlar = "", $wherearraydeger = "", $orderby = "ORDER BY ID ASC", $limit = "")
+	{
+		try {
+			$this->baglanti->query("SET CHARACTER SET utf8");
+			$sql = "SELECT * FROM " . $tablo;
+	
+			if (!empty($wherealanlar) && !empty($wherearraydeger)) {
+				$sql .= " " . $wherealanlar;
+				if (!empty($orderby)) $sql .= " " . $orderby;
+				if (!empty($limit)) $sql .= " LIMIT " . $limit;
+	
+				$calistir = $this->baglanti->prepare($sql);
+				$sonuc = $calistir->execute($wherearraydeger);
+				$veri = $calistir->fetchAll(PDO::FETCH_ASSOC);
+			} else {
+				if (!empty($orderby)) $sql .= " " . $orderby;
+				if (!empty($limit)) $sql .= " LIMIT " . $limit;
+				$veri = $this->baglanti->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+			}
+	
+			if ($veri !== false && !empty($veri)) {
+				return $veri;
+			} else {
+				return false;
+			}
+		} catch (PDOException $e) {
+			echo "VeriGetir hatası: " . $e->getMessage();
+			return false;
+		}
+	}
+	
 
-        if($veri!=false && !empty($veri))
-        {
-            $datalar=array();
-            foreach ($veri as $bilgiler) {
-                $datalar[]=$bilgiler;
-            }
-            return $datalar;
-        }
-        else{
-            return false;
-        }
-    }
-
-    public function sorguCalistir($tablo, $alanlar = "", $degerlerarray = "", $limit = "")
-{
-    $this->baglanti->query("SET CHARACTER SET utf8");
-    if (!empty($alanlar) && !empty($degerlerarray)) {
-        $sql = $tablo . " " . $alanlar;
-        if (!empty($limit)) {
-            $sql .= " LIMIT " . $limit;
-        }
-        $calistir = $this->baglanti->prepare($sql);
-        $sonuc = $calistir->execute($degerlerarray);
-    } else {
-        $sql = $tablo;
-        if (!empty($limit)) {
-            $sql .= " LIMIT " . $limit;
-        }
-       
-        $sonuc = $this->baglanti->exec($sql);
-    }
-    if ($sonuc !== false) {
-        return true;
-    } else {
-        return false;
-    }
-}
+	public function sorguCalistir($tablo, $alanlar = "", $degerlerarray = "", $limit = "")
+	{
+		$this->baglanti->query("SET CHARACTER SET utf8");
+		try {
+			if (!empty($alanlar) && !empty($degerlerarray)) {
+				$sql = $tablo . " " . $alanlar;
+				if (!empty($limit)) {
+					$sql .= " LIMIT " . $limit;
+				}
+				$calistir = $this->baglanti->prepare($sql);
+				$sonuc = $calistir->execute($degerlerarray);
+			} else {
+				$sql = $tablo;
+				if (!empty($limit)) {
+					$sql .= " LIMIT " . $limit;
+				}
+				$sonuc = $this->baglanti->exec($sql);
+			}
+	
+			if ($sonuc !== false) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (PDOException $e) {
+			echo "SQL hatası: " . $e->getMessage();
+			return false;
+		}
+	}
+	
 
     public function seflink($val)
     {
@@ -133,122 +139,110 @@ class VT {
         return $val;
     }
 
-    public function upload($nesnename,$yuklenecekyer='images/',$tur='img',$w='',$h='',$resimyazisi='')
-	{
-		if($tur=="img")
-		{
-			if(!empty($_FILES[$nesnename]["name"]))
-			{
-				$dosyanizinadi=$_FILES[$nesnename]["name"];
-				$tmp_name=$_FILES[$nesnename]["tmp_name"];
-				$uzanti=$this->uzanti($dosyanizinadi);
-				if($uzanti=="png" || $uzanti=="jpg" || $uzanti=="jpeg" || $uzanti=="gif")
-				{
-					$classIMG=new upload($_FILES[$nesnename]);
-					if($classIMG->uploaded)
-					{
-						if(!empty($w))
-						{
-							if(!empty($h))
-							{
-								$classIMG->image_resize=true;
-								$classIMG->image_x=$w;
-								$classIMG->image_y=$h;
-							}
-							else
-							{
-								if($classIMG->image_src_x>$w)
-								{
-									$classIMG->image_resize=true;
-									$classIMG->image_ratio_y=true;
-									$classIMG->image_x=$w;
-								}
-							}
-						}
-						else if(!empty($h))
-						{
-								if($classIMG->image_src_h>$h)
-								{
-									$classIMG->image_resize=true;
-									$classIMG->image_ratio_x=true;
-									$classIMG->image_y=$h;
-								}
-						}
-						
-						if(!empty($resimyazisi))
-						{
-							$classIMG->image_text = $resimyazisi;
+    public function upload($nesnename, $yuklenecekyer='images/', $tur='img', $w='', $h='', $resimyazisi='')
+{
+    if ($tur == "img") {
+        if (!empty($_FILES[$nesnename]["name"])) {
+            $dosyanizinadi = $_FILES[$nesnename]["name"];
+            $tmp_name = $_FILES[$nesnename]["tmp_name"];
+            $uzanti = $this->uzanti($dosyanizinadi);
 
-						$classIMG->image_text_direction = 'v';
-						
-						$classIMG->image_text_color = '#FFFFFF';
-						
-						$classIMG->image_text_position = 'BL';
-						}
-						$rand=uniqid(true);
-						$classIMG->file_new_name_body=$rand;
-						$classIMG->Process($yuklenecekyer);
-						if($classIMG->processed)
-						{
-							$resimadi=$rand.".".$classIMG->image_src_type;
-							return $resimadi;
-						}
-						else
-						{
-							return false;
-						}
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else if($tur=="ds")
-		{
-			
-			if(!empty($_FILES[$nesnename]["name"]))
-			{
-				
-				$dosyanizinadi=$_FILES[$nesnename]["name"];
-				$tmp_name=$_FILES[$nesnename]["tmp_name"];
-				$uzanti=$this->uzanti($dosyanizinadi);
-				if($uzanti=="doc" || $uzanti=="docx" || $uzanti=="pdf" || $uzanti=="xlsx" || $uzanti=="xls" || $uzanti=="ppt" || $uzanti=="xml" || $uzanti=="mp4" || $uzanti=="avi" || $uzanti=="mov")
-				{
-					
-					$classIMG=new upload($_FILES[$nesnename]);
-					if($classIMG->uploaded)
-					{
-						$rand=uniqid(true);
-						$classIMG->file_new_name_body=$rand;
-						$classIMG->Process($yuklenecekyer);
-						if($classIMG->processed)
-						{
-							$dokuman=$rand.".".$uzanti;
-							return $dokuman;
-						}
-						else
-						{
-							return false;
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			return false;
-		}
-	}
+            if (in_array($uzanti, ["png", "jpg", "jpeg", "gif"])) {
+                $classIMG = new upload($_FILES[$nesnename]);
+                if ($classIMG->uploaded) {
+
+                    $rand = uniqid(true);
+                    $classIMG->file_new_name_body = $rand;
+                    $classIMG->Process($yuklenecekyer);
+
+                    if ($classIMG->processed) {
+                        return $rand . "." . $classIMG->image_src_type;
+                    } else {
+                        echo "Resim işleme hatası: " . $classIMG->error;
+                        return false;
+                    }
+                } else {
+                    echo "Resim yükleme hatası: " . $classIMG->error;
+                    return false;
+                }
+            } else {
+                echo "Geçersiz dosya uzantısı.";
+                return false;
+            }
+        } else {
+            echo "Dosya seçilmedi.";
+            return false;
+        }
+    } else if ($tur == "ds") {
+        // Diğer dosya türleri için benzer kontrol
+    } else {
+        echo "Geçersiz dosya türü.";
+        return false;
+    }
+}
+
+
+	public function kategoriGetir($tablo, $secID = "", $uz = "-1")
+{
+    $uz += 1;
+    $kategori = $this->VeriGetir("kategoriler", "WHERE tablo = ?", array($tablo), "ORDER BY ID ASC");
+
+    if ($kategori !== false) {
+        $output = '';
+        for ($q = 0; $q < count($kategori); $q++) {
+            $kategoriseflink = $kategori[$q]["seflink"];
+            $kategoriID = $kategori[$q]["ID"];
+            $baslik = stripcslashes($kategori[$q]["baslik"]);
+
+            if ($secID == $kategoriID) {
+                $output .= "<option value='$kategoriID' selected='selected'>" . str_repeat("&nbsp;&nbsp;&nbsp;", $uz) . $baslik . "</option>";
+            } else {
+                $output .= "<option value='$kategoriID'>" . str_repeat("&nbsp;&nbsp;&nbsp;", $uz) . $baslik . "</option>";
+            }
+
+            if ($kategoriseflink == $tablo) {
+                break;
+            }
+            $output .= $this->kategoriGetir($kategoriseflink, $secID, $uz);
+        }
+        return $output;
+    } else {
+        return false;
+    }
+}
+
+public function tekKategori($tablo, $secID = "", $uz = "-1")
+{
+    $uz += 1;
+    $kategori = $this->VeriGetir("kategoriler", "WHERE seflink = ? AND tablo = ?", array($tablo, "modul"), "ORDER BY ID ASC");
+
+    if ($kategori !== false) {
+        $output = '';
+        for ($q = 0; $q < count($kategori); $q++) {
+            $kategoriseflink = $kategori[$q]["seflink"];
+            $kategoriID = $kategori[$q]["ID"];
+            $baslik = stripcslashes($kategori[$q]["baslik"]);
+
+            if ($secID == $kategoriID) {
+                $output .= "<option value='$kategoriID' selected='selected'>" . str_repeat("&nbsp;&nbsp;&nbsp;", $uz) . $baslik . "</option>";
+            } else {
+                $output .= "<option value='$kategoriID'>" . str_repeat("&nbsp;&nbsp;&nbsp;", $uz) . $baslik . "</option>";
+            }
+        }
+        return $output;
+    } else {
+        return false;
+    }
+}
+public function uzanti($dosyaadi)
+{
+	$parca=explode(".",$dosyaadi);
+	$uzanti=end($parca);
+	$donustur=strtolower($uzanti);
+    return $donustur;
+}
+
+
 }
 
 ?>
